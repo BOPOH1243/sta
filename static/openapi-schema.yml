@@ -1,0 +1,51 @@
+info:
+ title: 'Some application'
+ version: '0.1'
+paths:
+ /Perevals/:
+   get:
+     operationId: listPerevals
+     description: 'List of Perevals'
+     parameters: []
+     responses:
+       '200':
+         content:
+           application/json:
+             schema:
+               type: array
+               items:
+                 $ref: '#/components/schemas/Perevals'
+         description: ''
+     tags:
+     - perevals
+   post:
+     operationId: createPereval
+     description: 'Create pereval'
+     parameters: []
+     requestBody:
+       content:
+         application/json:
+           schema:
+             $ref: '#/components/schemas/Perevals'
+     responses:
+       '201':
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/Pereval'
+         description: ''
+     tags:
+     - perevals
+
+ schemas:
+   Pereval:
+     type: object
+     properties:
+       id:
+         type: integer
+         readOnly: true
+       title:
+         type: string
+         maxLength: 64
+     required:
+     - title

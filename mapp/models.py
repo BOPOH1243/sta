@@ -4,7 +4,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 # Create your models here.
 class User(models.Model):
-    email = models.EmailField()
+    email = models.EmailField(unique=True)
     phone = PhoneNumberField(unique=True, null=False, blank=False)
     name = models.CharField(max_length=64, default='default_name')
     family_name = models.CharField(max_length=64, default='default_fam')
@@ -30,10 +30,10 @@ class Area(models.Model):
 
 class Pereval(models.Model):
     STATUSES = [
-        'new',
-        'pending',
-        'accepted',
-        'rejected',
+        ('new','new'),
+        ('pending','pending'),
+        ('accepted','accepted'),
+        ('rejected','rejected'),
     ]
     beauty_title = models.CharField(max_length=64, default='default_beauty_title')
     title = models.CharField(max_length=64, default='default_title')
@@ -59,17 +59,17 @@ class PerevalImage(models.Model):
 
 class Level(models.Model):
     LEVELS = [
-        '1А',
-        '1Б',
-        '2А',
-        '2Б',
-        '3А',
-        '3Б',
+        ('1А','1А'),
+        ('1Б','1Б'),
+        ('2А','2А'),
+        ('2Б','2Б'),
+        ('3А','3А'),
+        ('3Б','3Б'),
     ]
-    winter = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], )
-    summer = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], )
-    autumn = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], )
-    spring = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], )
+    winter = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], blank=True)
+    summer = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], blank=True)
+    autumn = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], blank=True)
+    spring = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], blank=True)
 
 
 
