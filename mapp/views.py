@@ -74,4 +74,4 @@ def submitData(request):
             pereval.images.set([Image.objects.create(title=raw_image['title'], image=raw_image['data']) for raw_image in json_data['images']],)
             pereval.save()
         #return HttpResponse(PerevalSerializer(pereval).data)
-        return Response(status=status.HTTP_200_OK,)
+        return Response(status=status.HTTP_200_OK)
