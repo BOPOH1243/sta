@@ -13,4 +13,5 @@ router.register(r'areas', AreaViewset)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('submitdata/', submitData)
 ]

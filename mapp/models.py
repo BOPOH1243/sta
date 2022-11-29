@@ -1,6 +1,19 @@
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
+class Level(models.Model):
+    LEVELS = [
+        ('1А','1А'),
+        ('1Б','1Б'),
+        ('2А','2А'),
+        ('2Б','2Б'),
+        ('3А','3А'),
+        ('3Б','3Б'),
+    ]
+    winter = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], blank=True)
+    summer = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], blank=True)
+    autumn = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], blank=True)
+    spring = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], blank=True)
 
 # Create your models here.
 class User(models.Model):
@@ -44,6 +57,7 @@ class Pereval(models.Model):
     images = models.ManyToManyField(Image, through='PerevalImage')
     coords = models.ForeignKey(Coords, on_delete=models.CASCADE)
     areas = models.ManyToManyField(Area, through='PerevalArea')
+    level = models.ForeignKey(Level, on_delete=models.CASCADE)
 
 
 class PerevalArea(models.Model):
@@ -57,19 +71,7 @@ class PerevalImage(models.Model):
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
 
 
-class Level(models.Model):
-    LEVELS = [
-        ('1А','1А'),
-        ('1Б','1Б'),
-        ('2А','2А'),
-        ('2Б','2Б'),
-        ('3А','3А'),
-        ('3Б','3Б'),
-    ]
-    winter = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], blank=True)
-    summer = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], blank=True)
-    autumn = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], blank=True)
-    spring = models.CharField(max_length=2, choices=LEVELS, default=LEVELS[0], blank=True)
+
 
 
 

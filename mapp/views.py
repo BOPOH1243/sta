@@ -2,9 +2,11 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework import permissions
 from .models import *
+from django.http import HttpResponse
 from .serializers import *
 # Create your views here.
 import json
+from django.views.decorators.csrf import csrf_exempt
 
 
 class LevelViewset(viewsets.ModelViewSet):
@@ -38,15 +40,15 @@ class CoordsViewset(viewsets.ModelViewSet):
     serializer_class = CoordsSerializer
 
 #FIXME добавить все вьюсеты
-
+@csrf_exempt
 def submitData(request):
     if request.method == 'POST':
         json_params = json.loads(request.body)
         json_data = json_params
-        Pereval.objects.create(
+        pereval = Pereval.objects.create(
             beauty_title=json_data['beauty_title'],
             title=json_data['title'],
-            user=User.objects.get(email=json_data['user']['email']) if User.objects.get(email=json_data['user']['email']) else User.objects.create(
+            user=User.objects.get(email=json_data['user']['email']) if User.objects.filter(email=json_data['user']['email']).exists() else User.objects.create(
                 email=json_data['user']['email'],
                 name=json_data['user']['name'],
                 family_name=json_data['user']['fam'],
@@ -59,10 +61,14 @@ def submitData(request):
                 height=json_data['coords']['height'],
             ),
             level=Level.objects.create(
-                winter=json_data['level']['winter'] if json_data['level']['winter'] else None,
-                summer=json_data['level']['summer'] if json_data['level']['summer'] else None,
-                autumn=json_data['level']['autumn'] if json_data['level']['autumn'] else None,
-                spring=json_data['level']['spring'] if json_data['level']['spring'] else None,
+                winter=json_data['level']['winter'] if json_data['level']['winter'] else '',
+                summer=json_data['level']['summer'] if json_data['level']['summer'] else '',
+                autumn=json_data['level']['autumn'] if json_data['level']['autumn'] else '',
+                spring=json_data['level']['spring'] if json_data['level']['spring'] else '',
             ),
-            images=[Image.objects.create(title=raw_image['title'], image=raw_image['data']) for raw_image in json_data['images']],
+            #images=[Image.objects.create(title=raw_image['title'], image=raw_image['data']) for raw_image in json_data['images']],
         )
+        if pereval:
+            pereval.images.set([Image.objects.create(title=raw_image['title'], image=raw_image['data']) for raw_image in json_data['images']],)
+            pereval.save()
+        return HttpResponse(PerevalSerializer(pereval).data)
