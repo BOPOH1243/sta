@@ -15,7 +15,12 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+'''DB connections'''
+FSTR_DB_HOST = 'localhost'  #путь к базе данных;
+FSTR_DB_PORT = '5432'       #порт базы данных;
+FSTR_DB_LOGIN= 'postgres'   #логин, с которым происходит подключение к БД;
+FSTR_DB_PASS = 'psql'       #пароль, с которым происходит подключение к БД.
+FSTR_DB_NAME = 'fstrdb'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -84,11 +89,11 @@ WSGI_APPLICATION = 'fstr.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'fstrdb',
-        'USER': 'postgres',
-        'PASSWORD': 'psql',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': FSTR_DB_NAME,
+        'USER': FSTR_DB_LOGIN,
+        'PASSWORD': FSTR_DB_PASS,
+        'HOST': FSTR_DB_HOST,
+        'PORT': FSTR_DB_PORT,
     },
 }
 
