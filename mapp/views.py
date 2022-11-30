@@ -14,32 +14,80 @@ from django.views.decorators.csrf import csrf_exempt
 class LevelViewset(viewsets.ModelViewSet):
     queryset = Level.objects.all()
     serializer_class = LevelSerializer
-
+    def update(self, request, pk, *args, **kwargs):
+        level = self.queryset.get(pk=pk)
+        pereval = Pereval.objects.filter(level=level)
+        if pereval.exists():
+            if pereval.first().status =='new':
+                return super().update(request, *args, **kwargs)
+            else:
+                return HttpResponse(status=status.HTTP_403_FORBIDDEN)
+        else:
+            level.delete()
+            return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PerevalViewset(viewsets.ModelViewSet):
     queryset = Pereval.objects.all()
     serializer_class = PerevalSerializer
+    def update(self, request,pk, *args, **kwargs):
+        if self.queryset.get(pk=pk).status =='new':
+            return super().update(request,*args, **kwargs)
+        else:
+            return HttpResponse(status=status.HTTP_403_FORBIDDEN)
 
 
 class UserViewset(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    def update(self, request, *args, **kwargs):
+        return HttpResponse(status=status.HTTP_403_FORBIDDEN)
 
 
 class ImageViewset(viewsets.ModelViewSet):
     queryset = Image.objects.all()
     serializer_class = ImageSerializer
-
+    def update(self, request, pk, *args, **kwargs):
+        image = self.queryset.get(pk=pk)
+        pereval_image = PerevalImage.objects.filter(image=image)
+        if pereval_image.exists():
+            if pereval_image.first().pereval.status =='new':
+                return super().update(request, *args, **kwargs)
+            else:
+                return HttpResponse(status=status.HTTP_403_FORBIDDEN)
+        else:
+            image.delete()
+            return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AreaViewset(viewsets.ModelViewSet):
     queryset = Area.objects.all()
     serializer_class = AreaSerializer
-
+    def update(self, request, pk, *args, **kwargs):
+        area = self.queryset.get(pk=pk)
+        pereval = Pereval.objects.filter(area=area)
+        if pereval.exists():
+            if pereval.first().status =='new':
+                return super().update(request, *args, **kwargs)
+            else:
+                return HttpResponse(status=status.HTTP_403_FORBIDDEN)
+        else:
+            area.delete()
+            return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CoordsViewset(viewsets.ModelViewSet):
     queryset = Coords.objects.all()
     serializer_class = CoordsSerializer
+    def update(self, request, pk, *args, **kwargs):
+        coords = self.queryset.get(pk=pk)
+        pereval = Pereval.objects.filter(coords=coords)
+        if pereval.exists():
+            if pereval.first().status =='new':
+                return super().update(request, *args, **kwargs)
+            else:
+                return HttpResponse(status=status.HTTP_403_FORBIDDEN)
+        else:
+            coords.delete()
+            return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @csrf_exempt
