@@ -16,15 +16,24 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
-from rest_framework_swagger.views import get_swagger_view
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view as swagger_get_schema_view
 
-schema_view = get_swagger_view(title='Pastebin API')
+
+schema_view = swagger_get_schema_view(
+    openapi.Info(
+        title="Pereval API",
+        default_version='1.0.0',
+        description='API documentation of APP'
+    ),
+    public=True,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('swagger-ui/', TemplateView.as_view(
-       template_name='swagger/swagger-ui.html',
-       extra_context={'schema_url':'openapi-schema'}
-    ), name='swagger-ui'),
+    path(
+        'swagger/schema/',
+        schema_view.with_ui('swagger', cache_timeout=0), name='swagger_schema'
+    ),
     path('', include('mapp.urls'))
 ]

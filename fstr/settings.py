@@ -11,16 +11,24 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
+import os
 
+import dotenv
+from dotenv import load_dotenv
+
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+dotenv.get_key('.env', 'FSTR_DB_HOST')
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 '''DB connections'''
-FSTR_DB_HOST = 'localhost'  #путь к базе данных;
-FSTR_DB_PORT = '5432'       #порт базы данных;
-FSTR_DB_LOGIN= 'postgres'   #логин, с которым происходит подключение к БД;
-FSTR_DB_PASS = 'psql'       #пароль, с которым происходит подключение к БД.
-FSTR_DB_NAME = 'fstrdb'
+FSTR_DB_HOST = dotenv.get_key('.env', 'FSTR_DB_HOST')   #путь к базе данных;
+FSTR_DB_PORT = dotenv.get_key('.env', 'FSTR_DB_PORT')   #порт базы данных;
+FSTR_DB_LOGIN=dotenv.get_key('.env', 'FSTR_DB_LOGIN')   #логин, с которым происходит подключение к БД;
+FSTR_DB_PASS = dotenv.get_key('.env', 'FSTR_DB_PASS')   #пароль, с которым происходит подключение к БД.
+FSTR_DB_NAME = dotenv.get_key('.env', 'FSTR_DB_NAME')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -46,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "phonenumber_field",
     'rest_framework',
+    'drf_yasg',
     'rest_framework_swagger',
     'mapp',
 ]

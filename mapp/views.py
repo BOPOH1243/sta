@@ -26,6 +26,7 @@ class LevelViewset(viewsets.ModelViewSet):
             level.delete()
             return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class PerevalViewset(viewsets.ModelViewSet):
     queryset = Pereval.objects.all()
     serializer_class = PerevalSerializer
@@ -34,6 +35,21 @@ class PerevalViewset(viewsets.ModelViewSet):
             return super().update(request,*args, **kwargs)
         else:
             return HttpResponse(status=status.HTTP_403_FORBIDDEN)
+    def get_queryset(self):
+        queryset = self.queryset
+        user_id = self.request.query_params.get('user_id')
+        user_email=self.request.query_params.get('user_email')
+        if user_id is not None:
+            user = User.objects.filter(pk=user_id)
+            if user.exists():
+                queryset = queryset.filter(user=user.first())
+        if user_email is not None:
+            user = User.objects.filter(email=user_email)
+            if user.exists():
+                queryset = queryset.filter(user=user.first())
+        return queryset
+
+
 
 
 class UserViewset(viewsets.ModelViewSet):
@@ -78,16 +94,26 @@ class CoordsViewset(viewsets.ModelViewSet):
     queryset = Coords.objects.all()
     serializer_class = CoordsSerializer
     def update(self, request, pk, *args, **kwargs):
+        response_data = {
+            'state': '0',
+        }
         coords = self.queryset.get(pk=pk)
         pereval = Pereval.objects.filter(coords=coords)
         if pereval.exists():
-            if pereval.first().status =='new':
-                return super().update(request, *args, **kwargs)
+            if pereval.first().status == 'new':
+                response_data['state']='1'
+                response_data['message']='success'
+                update = super().update(request, *args, **kwargs)
+                update.content = json.dumps(response_data)
+                update.content_type="application/json"
+                return update
             else:
-                return HttpResponse(status=status.HTTP_403_FORBIDDEN)
+                response_data['message']='pereval status is not *new*'
+                return HttpResponse(json.dumps(response_data),status=status.HTTP_403_FORBIDDEN)
         else:
             coords.delete()
-            return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            response_data['message']='pereval does not exists that object was delete'
+            return HttpResponse(json.dumps(response_data), content_type="application/json",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @csrf_exempt
@@ -128,3 +154,72 @@ def submitData(request):
         }
         #return HttpResponse(PerevalSerializer(pereval).data)
         return HttpResponse(json.dumps(response_data), content_type="application/json", status=status.HTTP_201_CREATED, )
+'''
+@csrf_exempt
+def submitData(request):
+    if request.method == 'POST':
+        json_params = json.loads(request.body)
+        json_data = json_params
+
+        coords = CoordsSerializer(
+            data={
+                'latitude': json_data.get('coords', {}).get('latitude'),
+                'longitude': json_data.get('coords', {}).get('longitude'),
+                'height': json_data.get('coords', {}).get('height'),
+            }
+        )
+        level = LevelSerializer(
+            data={
+                'winter': json_data.get('level', {}).get('winter') if json_data.get('level', {}).get('winter') else '',
+                'summer': json_data.get('level', {}).get('summer') if json_data.get('level', {}).get('summer') else '',
+                'autumn': json_data.get('level', {}).get('autumn') if json_data.get('level', {}).get('autumn') else '',
+                'spring': json_data.get('level', {}).get('spring') if json_data.get('level', {}).get('spring') else '',
+            }
+        )
+        images = [
+            ImageSerializer(
+                data={
+                    'title': raw_image.get('title'),
+                    'image': raw_image.get('data'),
+                }
+            )
+            for raw_image in json_data.get('images')
+        ]
+        print(images)
+        print(coords.is_valid())
+        print(level.is_valid())
+        print([image.is_valid() for image in images])
+        pereval = Pereval.objects.create(
+            beauty_title=json_data.get('beauty_title'),
+            title=json_data.get('title'),
+            user=User.objects.get(email=json_data.get('user', {}).get('email')) if User.objects.filter(email=json_data.get('user', {}).get('email')).exists() else User.objects.create(
+                email=json_data.get('user', {}).get('email'),
+                name=json_data.get('user', {}).get('name'),
+                family_name=json_data.get('user', {}).get('fam'),
+                patronymic=json_data.get('user', {}).get('otc'),
+                phone=json_data.get('user', {}).get('phone'),
+            ),
+            coords=Coords.objects.create(
+                latitude=json_data.get('coords', {}).get('latitude'),
+                longitude=json_data.get('coords', {}).get('longitude'),
+                height=json_data.get('coords', {}).get('height'),
+            ),
+            level=Level.objects.create(
+                winter=json_data.get('level', {}).get('winter') if json_data.get('level', {}).get('winter') else '',
+                summer=json_data.get('level', {}).get('summer') if json_data.get('level', {}).get('summer') else '',
+                autumn=json_data.get('level', {}).get('autumn') if json_data.get('level', {}).get('autumn') else '',
+                spring=json_data.get('level', {}).get('spring') if json_data.get('level', {}).get('spring') else '',
+            ),
+            #images=[Image.objects.create(title=raw_image['title'], image=raw_image['data']) for raw_image in json_data['images']], # я бы так сделал, но джанго решил меня подставить
+        )
+
+        if pereval:
+            pereval.images.set([Image.objects.create(title=raw_image.get('title'), image=raw_image.get('data')) for raw_image in json_data.get('images')],)
+            pereval.save()
+
+        response_data = {
+            'id':pereval.pk
+        }
+        #return HttpResponse(PerevalSerializer(pereval).data)
+        return HttpResponse(json.dumps(response_data), content_type="application/json", status=status.HTTP_201_CREATED, )
+'''

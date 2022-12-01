@@ -11,6 +11,7 @@ router.register(r'coords', CoordsViewset)
 router.register(r'images', ImageViewset)
 router.register(r'areas', AreaViewset)
 
+
 urlpatterns = [
     path('', include(router.urls)),
     path('submitdata/', submitData)
