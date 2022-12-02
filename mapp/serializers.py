@@ -12,6 +12,10 @@ class PerevalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pereval
         fields = '__all__'
+        
+    def create(self, validated_data):
+        validated_data['status']='new'
+        return super().create(validated_data)
 
 
 class AreaSerializer(serializers.ModelSerializer):
