@@ -69,6 +69,7 @@ class SubmitDataSerializer(serializers.Serializer):
     level = serializers.DictField()
     images = serializers.ListField()
 
+#
 class ImageFuckedSerializer(serializers.Serializer):
     title = serializers.CharField()
     imagehex = serializers.CharField(max_length=20000000)

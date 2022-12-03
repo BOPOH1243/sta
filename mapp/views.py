@@ -119,44 +119,6 @@ class CoordsViewset(viewsets.ModelViewSet):
 
 
 @csrf_exempt
-def fsubmitData(request):
-    if request.method == 'POST':
-        json_params = json.loads(request.body)
-        json_data = json_params
-        pereval = Pereval.objects.create(
-            beauty_title=json_data.get('beauty_title'),
-            title=json_data.get('title'),
-            user=User.objects.get(email=json_data.get('user', {}).get('email')) if User.objects.filter(email=json_data.get('user', {}).get('email')).exists() else User.objects.create(
-                email=json_data.get('user', {}).get('email'),
-                name=json_data.get('user', {}).get('name'),
-                family_name=json_data.get('user', {}).get('fam'),
-                patronymic=json_data.get('user', {}).get('otc'),
-                phone=json_data.get('user', {}).get('phone'),
-            ),
-            coords=Coords.objects.create(
-                latitude=json_data.get('coords', {}).get('latitude'),
-                longitude=json_data.get('coords', {}).get('longitude'),
-                height=json_data.get('coords', {}).get('height'),
-            ),
-            level=Level.objects.create(
-                winter=json_data.get('level', {}).get('winter') if json_data.get('level', {}).get('winter') else '',
-                summer=json_data.get('level', {}).get('summer') if json_data.get('level', {}).get('summer') else '',
-                autumn=json_data.get('level', {}).get('autumn') if json_data.get('level', {}).get('autumn') else '',
-                spring=json_data.get('level', {}).get('spring') if json_data.get('level', {}).get('spring') else '',
-            ),
-            #images=[Image.objects.create(title=raw_image['title'], image=raw_image['data']) for raw_image in json_data['images']], # я бы так сделал, но джанго решил меня подставить
-        )
-
-        if pereval:
-            pereval.images.set([Image.objects.create(title=raw_image.get('title'), image=raw_image.get('data')) for raw_image in json_data.get('images')],)
-            pereval.save()
-
-        response_data = {
-            'id':pereval.pk
-        }
-        #return HttpResponse(PerevalSerializer(pereval).data)
-        return HttpResponse(json.dumps(response_data), content_type="application/json", status=status.HTTP_201_CREATED, )
-@csrf_exempt
 def submitData(request):
     if request.method == 'POST':
         json_params = json.loads(request.body)
