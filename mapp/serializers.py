@@ -43,13 +43,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'phone', 'name', 'family_name', 'patronymic')
-
-    def is_valid(self, *, raise_exception=False):
-        if User.objects.filter(email=self.initial_data.get('email')).exists():
-            return True
-        else:
-            return super().is_valid(self, raise_exception=raise_exception)
     def save(self, **kwargs):
+        self.is_valid()
         user = User.objects.filter(email=self.validated_data.get('email'))
         if user.exists():
             return user.first()
@@ -79,8 +74,8 @@ class ImageFuckedSerializer(serializers.Serializer):
     imagehex = serializers.CharField(max_length=20000000)
     def save(self, **kwargs):
         image_bytes = bytes.fromhex(self.validated_data['imagehex'])
-        image = ImageFile(io.BytesIO(image_bytes), name=f'foo.jpg')  # << the answer!
-        new_message = Image.objects.create(image=image)
+        image = ImageFile(io.BytesIO(image_bytes), name=f'{self.validated_data["title"]}.jpg')  # << the answer!
+        new_message = Image.objects.create(image=image, title=self.validated_data['title'])
         return new_message
 
 

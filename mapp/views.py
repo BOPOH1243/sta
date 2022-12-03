@@ -194,14 +194,6 @@ def submitData(request):
             'patronymic': json_data.get('user', {}).get('otc'),
             'phone': json_data.get('user', {}).get('phone'),
         })
-        #print(sbmdt.)
-        print(images)
-        print(coords.is_valid())
-        print(level.is_valid())
-        print([image.is_valid() for image in images])
-        [image.save() for image in images]
-        print(user.is_valid())
-        print(user)
         if coords.is_valid()==False:
             return HttpResponse(json.dumps({'message':'coords is not valid'}), content_type="application/json", status=status.HTTP_400_BAD_REQUEST, )
         if level.is_valid()==False:
@@ -210,34 +202,24 @@ def submitData(request):
             if image.is_valid() == False:
                 return HttpResponse(json.dumps({'message': 'image is not valid'}), content_type="application/json", status=status.status.HTTP_400_BAD_REQUEST, )
         if user.is_valid()==False:
-            return HttpResponse(json.dumps({'message':'user is not valid'}), content_type="application/json", status=status.status.HTTP_400_BAD_REQUEST, )
+            user = User.objects.filter(email=json_data.get('user', {}).get('email'))
+            if user.exists()==False:
+                return HttpResponse(json.dumps({'message':'user is not valid'}), content_type="application/json", status=status.status.HTTP_400_BAD_REQUEST, )
+            else: user=user.first()
+        else:
+            user = user.save()
 
         pereval = Pereval.objects.create(
             beauty_title=json_data.get('beauty_title'),
             title=json_data.get('title'),
-            user=User.objects.get(email=json_data.get('user', {}).get('email')) if User.objects.filter(email=json_data.get('user', {}).get('email')).exists() else User.objects.create(
-                email=json_data.get('user', {}).get('email'),
-                name=json_data.get('user', {}).get('name'),
-                family_name=json_data.get('user', {}).get('fam'),
-                patronymic=json_data.get('user', {}).get('otc'),
-                phone=json_data.get('user', {}).get('phone'),
-            ),
-            coords=Coords.objects.create(
-                latitude=json_data.get('coords', {}).get('latitude'),
-                longitude=json_data.get('coords', {}).get('longitude'),
-                height=json_data.get('coords', {}).get('height'),
-            ),
-            level=Level.objects.create(
-                winter=json_data.get('level', {}).get('winter') if json_data.get('level', {}).get('winter') else '',
-                summer=json_data.get('level', {}).get('summer') if json_data.get('level', {}).get('summer') else '',
-                autumn=json_data.get('level', {}).get('autumn') if json_data.get('level', {}).get('autumn') else '',
-                spring=json_data.get('level', {}).get('spring') if json_data.get('level', {}).get('spring') else '',
-            ),
+            user=user,
+            coords=coords.save(),
+            level=level.save(),
             #images=[Image.objects.create(title=raw_image['title'], image=raw_image['data']) for raw_image in json_data['images']], # я бы так сделал, но джанго решил меня подставить
         )
 
         if pereval:
-            pereval.images.set([Image.objects.create(title=raw_image.get('title'), image=raw_image.get('data')) for raw_image in json_data.get('images')],)
+            pereval.images.set([image.save() for image in images],)
             pereval.save()
 
         response_data = {
