@@ -9,6 +9,8 @@ from rest_framework import status
 import json
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
+import io
+from django.core.files.images import ImageFile
 
 
 class LevelViewset(viewsets.ModelViewSet):
@@ -117,7 +119,7 @@ class CoordsViewset(viewsets.ModelViewSet):
 
 
 @csrf_exempt
-def submitData(request):
+def fsubmitData(request):
     if request.method == 'POST':
         json_params = json.loads(request.body)
         json_data = json_params
@@ -154,7 +156,6 @@ def submitData(request):
         }
         #return HttpResponse(PerevalSerializer(pereval).data)
         return HttpResponse(json.dumps(response_data), content_type="application/json", status=status.HTTP_201_CREATED, )
-'''
 @csrf_exempt
 def submitData(request):
     if request.method == 'POST':
@@ -177,18 +178,23 @@ def submitData(request):
             }
         )
         images = [
-            ImageSerializer(
+            ImageFuckedSerializer(
                 data={
                     'title': raw_image.get('title'),
-                    'image': raw_image.get('data'),
+                    'imagehex': raw_image.get('data'),
                 }
+
             )
             for raw_image in json_data.get('images')
         ]
+        sbmdt = SubmitDataSerializer(data=json_data)
+        print(sbmdt.is_valid())
+        #print(sbmdt.)
         print(images)
         print(coords.is_valid())
         print(level.is_valid())
         print([image.is_valid() for image in images])
+        [image.save() for image in images]
         pereval = Pereval.objects.create(
             beauty_title=json_data.get('beauty_title'),
             title=json_data.get('title'),
@@ -222,4 +228,3 @@ def submitData(request):
         }
         #return HttpResponse(PerevalSerializer(pereval).data)
         return HttpResponse(json.dumps(response_data), content_type="application/json", status=status.HTTP_201_CREATED, )
-'''

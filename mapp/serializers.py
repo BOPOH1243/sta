@@ -1,5 +1,9 @@
 from .models import *
 from rest_framework import serializers
+from drf_extra_fields.fields import Base64ImageField
+import base64
+import io
+from django.core.files.images import ImageFile
 
 
 class LevelSerializer(serializers.ModelSerializer):
@@ -12,7 +16,11 @@ class PerevalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pereval
         fields = '__all__'
+        depth = 1
 
+    def create(self, validated_data):
+        validated_data['status']='new'
+        return super().create(validated_data)
 
 class AreaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,11 +37,33 @@ class CoordsSerializer(serializers.ModelSerializer):
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
-        fields = '__all__'
-
+        fields = ('image', 'title')
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+
+class SubmitDataSerializer(serializers.Serializer):
+    beauty_title = serializers.CharField()
+    title = serializers.CharField()
+    other_titles = serializers.CharField()
+    user = serializers.DictField()
+    coords = serializers.DictField()
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+    height = serializers.IntegerField()
+    level = serializers.DictField()
+    images = serializers.ListField()
+
+class ImageFuckedSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    imagehex = serializers.CharField(max_length=20000000)
+    def save(self, **kwargs):
+        image_bytes = bytes.fromhex(self.validated_data['imagehex'])
+        image = ImageFile(io.BytesIO(image_bytes), name=f'foo.jpg')  # << the answer!
+        new_message = Image.objects.create(image=image)
+        return new_message
+
+
 
