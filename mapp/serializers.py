@@ -42,7 +42,25 @@ class ImageSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ('email', 'phone', 'name', 'family_name', 'patronymic')
+
+    def is_valid(self, *, raise_exception=False):
+        if User.objects.filter(email=self.initial_data.get('email')).exists():
+            return True
+        else:
+            return super().is_valid(self, raise_exception=raise_exception)
+    def save(self, **kwargs):
+        user = User.objects.filter(email=self.validated_data.get('email'))
+        if user.exists():
+            return user.first()
+        else:
+            return User.objects.create(
+                email=self.validated_data.get('email'),
+                phone = self.validated_data.get('phone'),
+                name= self.validated_data.get('name'),
+                family_name= self.validated_data.get('family_name'),
+                patronymic= self.validated_data.get('patronymic'),
+            )
 
 class SubmitDataSerializer(serializers.Serializer):
     beauty_title = serializers.CharField()

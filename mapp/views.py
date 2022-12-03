@@ -187,14 +187,31 @@ def submitData(request):
             )
             for raw_image in json_data.get('images')
         ]
-        sbmdt = SubmitDataSerializer(data=json_data)
-        print(sbmdt.is_valid())
+        user = UserSerializer(data={
+            'email': json_data.get('user', {}).get('email'),
+            'name': json_data.get('user', {}).get('name'),
+            'family_name': json_data.get('user', {}).get('fam'),
+            'patronymic': json_data.get('user', {}).get('otc'),
+            'phone': json_data.get('user', {}).get('phone'),
+        })
         #print(sbmdt.)
         print(images)
         print(coords.is_valid())
         print(level.is_valid())
         print([image.is_valid() for image in images])
         [image.save() for image in images]
+        print(user.is_valid())
+        print(user)
+        if coords.is_valid()==False:
+            return HttpResponse(json.dumps({'message':'coords is not valid'}), content_type="application/json", status=status.HTTP_400_BAD_REQUEST, )
+        if level.is_valid()==False:
+            return HttpResponse(json.dumps({'message':'level is not valid'}), content_type="application/json", status=status.status.HTTP_400_BAD_REQUEST, )
+        for image in images:
+            if image.is_valid() == False:
+                return HttpResponse(json.dumps({'message': 'image is not valid'}), content_type="application/json", status=status.status.HTTP_400_BAD_REQUEST, )
+        if user.is_valid()==False:
+            return HttpResponse(json.dumps({'message':'user is not valid'}), content_type="application/json", status=status.status.HTTP_400_BAD_REQUEST, )
+
         pereval = Pereval.objects.create(
             beauty_title=json_data.get('beauty_title'),
             title=json_data.get('title'),
