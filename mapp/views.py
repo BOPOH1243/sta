@@ -153,10 +153,6 @@ def submitData(request):
             }
         )
         print(pereval.is_valid(raise_exception=True))
-        tsr=SubmitDataSerializer(instance=Pereval.objects.get())
-        return HttpResponse(json.dumps(tsr.data), content_type="application/json", status=status.HTTP_400_BAD_REQUEST, )
-
-
         if pereval.is_valid():
             pereval = pereval.save()
             pereval.images.set([image.save() for image in images], )

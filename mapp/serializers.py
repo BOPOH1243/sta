@@ -63,5 +63,26 @@ class SubmitDataSerializer(serializers.ModelSerializer):
         model = Pereval
         fields = ['coords', 'level', 'user', 'beauty_title', 'title', 'other_titles']
 
+    def create(self, validated_data):
+        coords = CoordsSerializer(data=validated_data['coords'])
+        coords.is_valid()
+        coords = coords.save()
+        level = LevelSerializer(data=validated_data['level'])
+        level.is_valid()
+        level = level.save()
+        user = UserSerializer(data=validated_data['user'])
+        user.is_valid()
+        user = user.save()
+        beauty_title = validated_data['beauty_title']
+        title = validated_data['title']
+        other_titles=validated_data['other_titles']
+        return Pereval.objects.create(
+            coords=coords,
+            level=level,
+            user=user,
+            beauty_title=beauty_title,
+            title=title,
+            other_titles=other_titles,
+        )
 
 
