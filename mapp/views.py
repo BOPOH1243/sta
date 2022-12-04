@@ -123,22 +123,6 @@ def submitData(request):
     if request.method == 'POST':
         json_params = json.loads(request.body)
         json_data = json_params
-
-        coords = CoordsSerializer(
-            data={
-                'latitude': json_data.get('coords', {}).get('latitude'),
-                'longitude': json_data.get('coords', {}).get('longitude'),
-                'height': json_data.get('coords', {}).get('height'),
-            }
-        )
-        level = LevelSerializer(
-            data={
-                'winter': json_data.get('level', {}).get('winter') if json_data.get('level', {}).get('winter') else '',
-                'summer': json_data.get('level', {}).get('summer') if json_data.get('level', {}).get('summer') else '',
-                'autumn': json_data.get('level', {}).get('autumn') if json_data.get('level', {}).get('autumn') else '',
-                'spring': json_data.get('level', {}).get('spring') if json_data.get('level', {}).get('spring') else '',
-            }
-        )
         images = [
             ImageFuckedSerializer(
                 data={
@@ -149,43 +133,40 @@ def submitData(request):
             )
             for raw_image in json_data.get('images')
         ]
-        user = UserSerializer(data={
-            'email': json_data.get('user', {}).get('email'),
-            'name': json_data.get('user', {}).get('name'),
-            'family_name': json_data.get('user', {}).get('fam'),
-            'patronymic': json_data.get('user', {}).get('otc'),
-            'phone': json_data.get('user', {}).get('phone'),
-        })
-        if coords.is_valid()==False:
-            return HttpResponse(json.dumps({'message':'coords is not valid'}), content_type="application/json", status=status.HTTP_400_BAD_REQUEST, )
-        if level.is_valid()==False:
-            return HttpResponse(json.dumps({'message':'level is not valid'}), content_type="application/json", status=status.status.HTTP_400_BAD_REQUEST, )
         for image in images:
-            if image.is_valid() == False:
-                return HttpResponse(json.dumps({'message': 'image is not valid'}), content_type="application/json", status=status.status.HTTP_400_BAD_REQUEST, )
-        if user.is_valid()==False:
-            user = User.objects.filter(email=json_data.get('user', {}).get('email'))
-            if user.exists()==False:
-                return HttpResponse(json.dumps({'message':'user is not valid'}), content_type="application/json", status=status.status.HTTP_400_BAD_REQUEST, )
-            else: user=user.first()
-        else:
-            user = user.save()
-
-        pereval = Pereval.objects.create(
-            beauty_title=json_data.get('beauty_title'),
-            title=json_data.get('title'),
-            user=user,
-            coords=coords.save(),
-            level=level.save(),
-            #images=[Image.objects.create(title=raw_image['title'], image=raw_image['data']) for raw_image in json_data['images']], # я бы так сделал, но джанго решил меня подставить
+            if image.is_valid()==False:
+                return HttpResponse(json.dumps({'message':'image is not valid'}), content_type="application/json", status=status.HTTP_400_BAD_REQUEST,)
+        pereval = SubmitDataSerializer(
+            data={
+                "beauty_title": json_data.get('beauty_title'),
+                "title": json_data.get('title'),
+                "other_titles": json_data.get('other_titles'),
+                'level': LevelSerializer(data=json_data.get('level', {})),
+                'user': UserSerializer(data={
+                    'email': json_data.get('user', {}).get('email'),
+                    'phone': json_data.get('user', {}).get('phone'),
+                    'name': json_data.get('user', {}).get('name'),
+                    'family_name': json_data.get('user', {}).get('fam'),
+                    'patronymic': json_data.get('user', {}).get('otc')
+                }),
+                'coords': CoordsSerializer(data=json_data.get('coords', {}))
+            }
         )
-
-        if pereval:
-            pereval.images.set([image.save() for image in images],)
+        tsr=SubmitDataSerializer(instance=Pereval.objects.get())
+        return HttpResponse(json.dumps(tsr.data), content_type="application/json", status=status.HTTP_400_BAD_REQUEST, )
+        print(pereval.is_valid())
+        print(pereval.validated_data)
+        if pereval.is_valid():
+            pereval = pereval.save()
+            pereval.images.set([image.save() for image in images], )
             pereval.save()
+        else:
+            return HttpResponse(json.dumps({'message': 'pereval is not valid'}), content_type="application/json", status=status.HTTP_400_BAD_REQUEST, )
+
+
 
         response_data = {
-            'id':pereval.pk
+            'id': pereval.pk
         }
         #return HttpResponse(PerevalSerializer(pereval).data)
         return HttpResponse(json.dumps(response_data), content_type="application/json", status=status.HTTP_201_CREATED, )

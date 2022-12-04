@@ -18,9 +18,7 @@ class PerevalSerializer(serializers.ModelSerializer):
         fields = '__all__'
         depth = 1
 
-    def create(self, validated_data):
-        validated_data['status']='new'
-        return super().create(validated_data)
+
 
 class AreaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,7 +29,7 @@ class AreaSerializer(serializers.ModelSerializer):
 class CoordsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Coords
-        fields = '__all__'
+        fields = ('latitude', 'longitude', 'height')
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -43,32 +41,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'phone', 'name', 'family_name', 'patronymic')
-    def save(self, **kwargs):
-        self.is_valid()
-        user = User.objects.filter(email=self.validated_data.get('email'))
-        if user.exists():
-            return user.first()
-        else:
-            return User.objects.create(
-                email=self.validated_data.get('email'),
-                phone = self.validated_data.get('phone'),
-                name= self.validated_data.get('name'),
-                family_name= self.validated_data.get('family_name'),
-                patronymic= self.validated_data.get('patronymic'),
-            )
-
-class SubmitDataSerializer(serializers.Serializer):
-    beauty_title = serializers.CharField()
-    title = serializers.CharField()
-    other_titles = serializers.CharField()
-    user = serializers.DictField()
-    coords = serializers.DictField()
-    latitude = serializers.FloatField()
-    longitude = serializers.FloatField()
-    height = serializers.IntegerField()
-    level = serializers.DictField()
-    images = serializers.ListField()
-
 #
 class ImageFuckedSerializer(serializers.Serializer):
     title = serializers.CharField()
@@ -78,6 +50,18 @@ class ImageFuckedSerializer(serializers.Serializer):
         image = ImageFile(io.BytesIO(image_bytes), name=f'{self.validated_data["title"]}.jpg')  # << the answer!
         new_message = Image.objects.create(image=image, title=self.validated_data['title'])
         return new_message
+
+
+class SubmitDataSerializer(serializers.ModelSerializer):
+    coords = CoordsSerializer()
+    level = LevelSerializer(source='*')
+    user = UserSerializer()
+    beauty_title = serializers.CharField()
+    title = serializers.CharField()
+    other_titles = serializers.CharField()
+    class Meta:
+        model = Pereval
+        fields = ['coords', 'level', 'user', 'beauty_title', 'title', 'other_titles']
 
 
 

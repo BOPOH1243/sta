@@ -17,8 +17,8 @@ class Level(models.Model):
 
 # Create your models here.
 class User(models.Model):
-    email = models.EmailField(unique=True)
-    phone = PhoneNumberField(unique=True, null=False, blank=False)
+    email = models.EmailField()
+    phone = PhoneNumberField(null=False, blank=False)
     name = models.CharField(max_length=64, default='default_name')
     family_name = models.CharField(max_length=64, default='default_fam')
     patronymic = models.CharField(max_length=64, default='default_otc')
@@ -40,7 +40,6 @@ class Area(models.Model):
 
 
 
-
 class Pereval(models.Model):
     STATUSES = [
         ('new','new'),
@@ -52,7 +51,7 @@ class Pereval(models.Model):
     title = models.CharField(max_length=64, default='default_title')
     other_titles = models.CharField(max_length=64, default='default')
     add_time = models.DateTimeField(auto_now_add=True, editable=True)
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.CharField(max_length=16, choices=STATUSES, default='new')
     images = models.ManyToManyField(Image, through='PerevalImage')
     coords = models.ForeignKey(Coords, on_delete=models.CASCADE)
