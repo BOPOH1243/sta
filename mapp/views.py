@@ -138,50 +138,60 @@ class SubmitDataViewset(viewsets.ModelViewSet):
         pereval.save()
         return HttpResponse(status=status.HTTP_200_OK)
     def create(self, request, *args, **kwargs):
-        if request.method == 'POST':
-            json_params = json.loads(request.body)
-            json_data = json_params
-            images = [
-                ImageFuckedSerializer(
-                    data={
-                        'title': raw_image.get('title'),
-                        'imagehex': raw_image.get('data'),
-                    }
-
-                )
-                for raw_image in json_data.get('images')
-            ]
-            for image in images:
-                if image.is_valid() == False:
-                    return HttpResponse(json.dumps({'message': 'image is not valid'}), content_type="application/json",
-                                        status=status.HTTP_400_BAD_REQUEST, )
-            pereval = SubmitDataSerializer(
+        json_data = request.data
+        pereval = SubmitDataSerializer(
+            data=json_data
+        )
+        if pereval.is_valid():
+            pereval_obj=pereval.save()
+        else:
+            return HttpResponse(json.dumps({'message': 'pereval is not valid'}), content_type="application/json", status=status.HTTP_400_BAD_REQUEST, )
+        response_data = {
+            'id': pereval_obj.pk
+        }
+        return HttpResponse(json.dumps(response_data), content_type="application/json", status=status.HTTP_201_CREATED, )
+@csrf_exempt
+def submitData(request):
+    if request.method == 'POST':
+        json_params = json.loads(request.body)
+        json_data = json_params
+        images = [
+            ImageFuckedSerializer(
                 data={
-                    "beauty_title": json_data.get('beauty_title'),
-                    "title": json_data.get('title'),
-                    "other_titles": json_data.get('other_titles'),
-                    'level': json_data.get('level', {}),
-                    'user': {
-                        'email': json_data.get('user', {}).get('email'),
-                        'phone': json_data.get('user', {}).get('phone'),
-                        'name': json_data.get('user', {}).get('name'),
-                        'family_name': json_data.get('user', {}).get('fam'),
-                        'patronymic': json_data.get('user', {}).get('otc')
-                    },
-                    'coords': json_data.get('coords', {})
+                    'title': raw_image.get('title'),
+                    'imagehex': raw_image.get('data'),
                 }
-            )
-            print(pereval.is_valid(raise_exception=True))
-            if pereval.is_valid():
-                pereval_obj = pereval.save()
-                pereval_obj.images.set([image.save() for image in images], )
-                pereval_obj.save()
-            else:
-                return HttpResponse(json.dumps({'message': 'pereval is not valid'}), content_type="application/json",
-                                    status=status.HTTP_400_BAD_REQUEST, )
 
-            response_data = {
-                'id': pereval_obj.pk
+            )
+            for raw_image in json_data.get('images')
+        ]
+        for image in images:
+            if image.is_valid()==False:
+                return HttpResponse(json.dumps({'message':'image is not valid'}), content_type="application/json", status=status.HTTP_400_BAD_REQUEST,)
+        pereval = SubmitDataSerializer(
+            data={
+                "beauty_title": json_data.get('beauty_title'),
+                "title": json_data.get('title'),
+                "other_titles": json_data.get('other_titles'),
+                'level': json_data.get('level', {}),
+                'user': {
+                    'email': json_data.get('user', {}).get('email'),
+                    'phone': json_data.get('user', {}).get('phone'),
+                    'name': json_data.get('user', {}).get('name'),
+                    'family_name': json_data.get('user', {}).get('fam'),
+                    'patronymic': json_data.get('user', {}).get('otc')
+                },
+                'coords': json_data.get('coords', {})
             }
-            return HttpResponse(json.dumps(response_data), content_type="application/json",
-                                status=status.HTTP_201_CREATED, )
+        )
+        if pereval.is_valid():
+            pereval_obj = pereval.save()
+            pereval_obj.images.set([image.save() for image in images], )
+            pereval_obj.save()
+        else:
+            return HttpResponse(json.dumps({'message': 'pereval is not valid'}), content_type="application/json", status=status.HTTP_400_BAD_REQUEST, )
+
+        response_data = {
+            'id': pereval_obj.pk
+        }
+        return HttpResponse(json.dumps(response_data), content_type="application/json", status=status.HTTP_201_CREATED, )
