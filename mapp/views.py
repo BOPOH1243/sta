@@ -141,21 +141,22 @@ def submitData(request):
                 "beauty_title": json_data.get('beauty_title'),
                 "title": json_data.get('title'),
                 "other_titles": json_data.get('other_titles'),
-                'level': LevelSerializer(data=json_data.get('level', {})),
-                'user': UserSerializer(data={
+                'level': json_data.get('level', {}),
+                'user': {
                     'email': json_data.get('user', {}).get('email'),
                     'phone': json_data.get('user', {}).get('phone'),
                     'name': json_data.get('user', {}).get('name'),
                     'family_name': json_data.get('user', {}).get('fam'),
                     'patronymic': json_data.get('user', {}).get('otc')
-                }),
-                'coords': CoordsSerializer(data=json_data.get('coords', {}))
+                },
+                'coords': json_data.get('coords', {})
             }
         )
+        print(pereval.is_valid(raise_exception=True))
         tsr=SubmitDataSerializer(instance=Pereval.objects.get())
         return HttpResponse(json.dumps(tsr.data), content_type="application/json", status=status.HTTP_400_BAD_REQUEST, )
-        print(pereval.is_valid())
-        print(pereval.validated_data)
+
+
         if pereval.is_valid():
             pereval = pereval.save()
             pereval.images.set([image.save() for image in images], )

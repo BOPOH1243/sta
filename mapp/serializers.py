@@ -9,7 +9,7 @@ from django.core.files.images import ImageFile
 class LevelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Level
-        fields = '__all__'
+        fields = ('winter', 'summer', 'autumn', 'spring')
 
 
 class PerevalSerializer(serializers.ModelSerializer):
@@ -54,7 +54,7 @@ class ImageFuckedSerializer(serializers.Serializer):
 
 class SubmitDataSerializer(serializers.ModelSerializer):
     coords = CoordsSerializer()
-    level = LevelSerializer(source='*')
+    level = LevelSerializer()
     user = UserSerializer()
     beauty_title = serializers.CharField()
     title = serializers.CharField()
