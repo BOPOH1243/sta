@@ -61,7 +61,7 @@ class SubmitDataSerializer(serializers.ModelSerializer):
     other_titles = serializers.CharField()
     class Meta:
         model = Pereval
-        fields = ['coords', 'level', 'user', 'beauty_title', 'title', 'other_titles']
+        fields = ['coords', 'level', 'user', 'beauty_title', 'title', 'other_titles', 'id']
 
     def create(self, validated_data):
         coords = CoordsSerializer(data=validated_data['coords'])
@@ -84,5 +84,24 @@ class SubmitDataSerializer(serializers.ModelSerializer):
             title=title,
             other_titles=other_titles,
         )
-
-
+    def update(self, instance, validated_data):
+        print(self.coords)
+        coords = CoordsSerializer(data=validated_data['coords'])
+        coords.is_valid()
+        coords = coords.save()
+        print(coords)
+        instance.coords = coords
+        level = LevelSerializer(data=validated_data['level'])
+        level.is_valid()
+        level = level.save()
+        print(level)
+        instance.level = level
+        user = UserSerializer(data=validated_data['user'])
+        user.is_valid()
+        user = user.save()
+        print(user)
+        instance.user = user
+        instance.beauty_title = validated_data['beauty_title']
+        instance.title = validated_data['title']
+        instance.other_titles=validated_data['other_titles']
+        return instance.save()

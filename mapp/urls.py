@@ -10,9 +10,10 @@ router.register(r'users', UserViewset)
 router.register(r'coords', CoordsViewset)
 router.register(r'images', ImageViewset)
 router.register(r'areas', AreaViewset)
+router.register('submitdatas', SubmitDataViewset)
 
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('submitdata/', submitData)
+    path('submitdata/', submitData),
 ]
